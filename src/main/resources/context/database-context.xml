@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 	
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"	
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans 
+	   	http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+	   	http://www.springframework.org/schema/tx
+   		http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
+   		http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo-1.3.xsd">
+
+	<bean 
+		id="jdbcPropertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:properties/jdbc.properties</value>
+				<value>classpath:properties/env.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- NoSql mongodb configuration -->
+	<mongo:mongo host="${mongo.host}" port="${mongo.port}" >
+	<mongo:options  connections-per-host="8"
+					threads-allowed-to-block-for-connection-multiplier="4"
+					connect-timeout="1000"
+					max-wait-time="1500"
+					auto-connect-retry="true"
+					socket-keep-alive="true"
+					socket-timeout="1500"
+					slave-ok="true"
+					write-number="1"
+					write-timeout="0"
+					write-fsync="true"/>
+	</mongo:mongo>
+	<mongo:db-factory dbname="${mongo.db.database}" mongo-ref="mongo" username="${mongo.db.username}" password="${mongo.db.password}"/>
+ 
+	<bean id="mappingContext" class="org.springframework.data.mongodb.core.mapping.MongoMappingContext" />
+
+	<!-- _class field 생성을 막음 -->
+	<bean id="defaultMongoTypeMapper" class="org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper">
+		<constructor-arg name="typeKey"><null/></constructor-arg>
+	</bean>
+
+	<bean id="mappingMongoConverter" class="org.springframework.data.mongodb.core.convert.MappingMongoConverter">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+		<constructor-arg name="mappingContext" ref="mappingContext" />
+		<property name="typeMapper" ref="defaultMongoTypeMapper" />
+	</bean>
+
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+		<constructor-arg name="mongoConverter" ref="mappingMongoConverter" />
+	</bean>
+	
+	
+	<bean id="textEncryptor" class="org.jasypt.util.text.BasicTextEncryptor">
+		<property name="password" value="${system.encryption.key}"  />
+	</bean>
+
+
+
+	<!-- Declare a datasource that has pooling capabilities -->
+	<!-- MariaDB configuration  -->
+	<bean id="systemDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${mariaDB.jdbc.driverClassName}" />
+		<property name="url" value="${mariaDB.jdbc.url}" />
+		<property name="username" value="${mariaDB.jdbc.username}" />
+		<property name="password" value="${mariaDB.jdbc.password}" />
+	</bean>
+	<bean id="transactionManager"  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource">
+			<ref bean="systemDataSource" />
+		</property>
+	</bean>
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="systemDataSource" />
+		<property name="configLocation" value="classpath:config/mybatis-config.xml"/>
+	</bean>
+
+
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory"/>
+	</bean>
+
+	
+
+</beans>

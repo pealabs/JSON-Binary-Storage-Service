@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<log4j:configuration xmlns:log4j='http://jakarta.apache.org/log4j/'>
+
+	<!-- Appenders -->
+	<appender name="Console" class="org.apache.log4j.ConsoleAppender">
+		<!--  param name="encoding" value="UTF-8" /-->
+		<!--  param name="DatePattern" value="'.'yyyyMMdd" /-->
+		<layout class="org.apache.log4j.PatternLayout">
+			<!-- <param name="ConversionPattern" value="[log4j.%p] : (%C{1}.%M:%L)%n%m%n%n"/> -->
+			<param name="ConversionPattern" value="%m %n"/>
+		</layout>
+		<filter class="org.apache.log4j.varia.StringMatchFilter">
+			<param name="StringToMatch" value="Result" />
+			<param name="AcceptOnMatch" value="false" />
+		</filter>
+	</appender>
+	
+	<appender name="FILE" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="/srv_logs/restful.log"/>
+		<param name="Append" value="true" />
+		<!--  param name="encoding" value="UTF-8" /-->
+		<param name="DatePattern" value="'.'yyyy-MM-dd" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{yy-MM-dd HH:mm:ss}] [%-5p] (%F:%L)#%M() - %m%n"/>
+		</layout>
+	</appender>
+	
+	<logger name="org.springframework">
+		<level value="ERROR"/>
+	</logger>
+
+	<logger name="org.mybatis.spring">
+		<level value="ERROR"/>
+	</logger>
+
+	<logger name="java.sql">
+		<level value="ERROR"/>
+	</logger>
+	
+	<root>
+		<level value="ERROR"/>
+		<!-- <appender-ref ref="Console"/> -->
+		<appender-ref ref="FILE"/>
+	</root>
+
+</log4j:configuration>

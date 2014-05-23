@@ -1,3 +1,7 @@
+오픈 소스 버전 입니다.
+
+현재 서비스 중인 버전과 일부 다른 부분이 존재 합니다.
+
 간단 설치 및 테스트 해보기.
 
 1. gramdb-api/src/main/resources/properties/jdbc.properties 에서 설치 된 mariadb & mongodb 정보를 수정 합니다.
